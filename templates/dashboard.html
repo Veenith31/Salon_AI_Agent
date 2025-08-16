@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Dashboard - Salon Booking Agent</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+            background: #f8fafc;
+        }
+        
+        .sidebar {
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 2rem 0;
+            position: fixed;
+            width: 250px;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-brand {
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-brand h3 {
+            color: #6366f1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .sidebar-nav {
+            list-style: none;
+        }
+        
+        .sidebar-nav li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 2rem;
+            color: #64748b;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: #f1f5f9;
+            color: #6366f1;
+            border-right: 3px solid #6366f1;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .dashboard-header h1 {
+            color: #1e293b;
+            margin: 0;
+        }
+        
+        .date-range {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+        }
+        
+        .stat-icon.revenue { background: linear-gradient(135deg, #10b981, #059669); }
+        .stat-icon.bookings { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+        .stat-icon.customers { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .stat-icon.satisfaction { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        .stat-change {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .stat-change.positive {
+            color: #10b981;
+        }
+        
+        .stat-change.negative {
+            color: #ef4444;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .chart-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-header h3 {
+            margin: 0;
+            color: #1e293b;
+        }
+        
+        .tables-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .table-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .data-table th {
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .data-table td {
+            color: #6b7280;
+        }
+        
+        .service-bar {
+            height: 0.5rem;
+            background: #e2e8f0;
+            border-radius: 0.25rem;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .service-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 1024px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tables-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h3><i class="fas fa-chart-line"></i> Dashboard</h3>
+            </div>
+            <nav>
+                <ul class="sidebar-nav">
+                    <li><a href="#overview" class="nav-item active" data-section="overview">
+                        <i class="fas fa-tachometer-alt"></i> Overview
+                    </a></li>
+                    <li><a href="#bookings" class="nav-item" data-section="bookings">
+                        <i class="fas fa-calendar-alt"></i> Bookings
+                    </a></li>
+                    <li><a href="#customers" class="nav-item" data-section="customers">
+                        <i class="fas fa-users"></i> Customers
+                    </a></li>
+                    <li><a href="#services" class="nav-item" data-section="services">
+                        <i class="fas fa-scissors"></i> Services
+                    </a></li>
+                    <li><a href="#analytics" class="nav-item" data-section="analytics">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a></li>
+                    <li><a href="#settings" class="nav-item" data-section="settings">
+                        <i class="fas fa-cog"></i> Settings
+                    </a></li>
+                    <li><a href="/" class="nav-item">
+                        <i class="fas fa-arrow-left"></i> Back to Site
+                    </a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1>Business Overview</h1>
+                <div class="date-range">
+                    <label for="dateRange">Period:</label>
+                    <select id="dateRange" class="form-control">
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month" selected>This Month</option>
+                        <option value="quarter">This Quarter</option>
+                        <option value="year">This Year</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Overview Section -->
+            <div id="overview-section" class="dashboard-section">
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="revenue-value">$680</div>
+                                <div class="stat-label">Total Revenue</div>
+                                <div class="stat-change positive">+12.5% from last month</div>
+                            </div>
+                            <div class="stat-icon revenue">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="bookings-value">12</div>
+                                <div class="stat-label">Bookings Today</div>
+                                <div class="stat-change positive">+8.3% from yesterday</div>
+                            </div>
+                            <div class="stat-icon bookings">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="customers-value">156</div>
+                                <div class="stat-label">Active Customers</div>
+                                <div class="stat-change positive">+15.2% this month</div>
+                            </div>
+                            <div class="stat-icon customers">
+                                <i class="fas fa-user-friends"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="satisfaction-value">4.7</div>
+                                <div class="stat-label">Customer Satisfaction</div>
+                                <div class="stat-change positive">+0.3 from last month</div>
+                            </div>
+                            <div class="stat-icon satisfaction">
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Revenue Trend</h3>
+                        </div>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Service Distribution</h3>
+                        </div>
+                        <canvas id="servicesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tables Grid -->
+                <div class="tables-grid">
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3>Popular Services</h3>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>Bookings</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody id="popular-services">
+                                <tr>
+                                    <td>
+                                        Deep Cleansing Facial
+                                        <div class="service-bar">
+                                            <div class="service-bar-fill" style="width: 80%"></div>
+                                        </div>
+                                    </td>
+                                    <td>8</td>
+                                    <td>$360</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Classic Haircut
+                                        <div class="service-bar">
+                                            <div class="service-bar-fill" style="width: 60%"></div>
+                                        </div>
+                                    </td>
+                                    <td>6</td>
+                                    <td>$150</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Manicure
+                                        <div class="service-bar">
+                                            <div class="service-bar-fill" style="width: 40%"></div>
+                                        </div>
+                                    </td>
+                                    <td>4</td>
+                                    <td>$80</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3>Recent Bookings</h3>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Service</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-bookings">
+                                <tr>
+                                    <td>Sarah Johnson</td>
+                                    <td>Facial</td>
+                                    <td>2:00 PM</td>
+                                    <td><span style="color: #10b981; font-weight: 500;">Confirmed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Mike Chen</td>
+                                    <td>Haircut</td>
+                                    <td>3:30 PM</td>
+                                    <td><span style="color: #f59e0b; font-weight: 500;">Pending</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Emma Davis</td>
+                                    <td>Massage</td>
+                                    <td>4:00 PM</td>
+                                    <td><span style="color: #10b981; font-weight: 500;">Confirmed</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Insights Section -->
+            <div class="table-card" style="margin-top: 2rem;">
+                <div class="table-header">
+                    <h3><i class="fas fa-robot"></i> AI Insights & Recommendations</h3>
+                </div>
+                <div id="ai-insights">
+                    <div style="padding: 1rem; background: #f8fafc; border-radius: 0.5rem; margin-bottom: 1rem;">
+                        <h5 style="color: #6366f1; margin-bottom: 0.5rem;">🔮 Predictive Analysis</h5>
+                        <p style="margin: 0; color: #64748b;">Based on current trends, you're likely to have 15-18 bookings tomorrow. Consider promoting massage services as they show 25% higher conversion this time of month.</p>
+                    </div>
+                    <div style="padding: 1rem; background: #f0fdf4; border-radius: 0.5rem; margin-bottom: 1rem;">
+                        <h5 style="color: #10b981; margin-bottom: 0.5rem;">💡 Optimization Tip</h5>
+                        <p style="margin: 0; color: #64748b;">Your 2-4 PM slot has 90% booking rate. Consider adding a premium service during peak hours to maximize revenue.</p>
+                    </div>
+                    <div style="padding: 1rem; background: #fef7ee; border-radius: 0.5rem;">
+                        <h5 style="color: #f59e0b; margin-bottom: 0.5rem;">⚠️ Customer Retention Alert</h5>
+                        <p style="margin: 0; color: #64748b;">3 customers haven't booked in 60+ days. Send them personalized offers to re-engage them.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/app.js"></script>
+    <script>
+        // Dashboard initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            loadAnalytics();
+            setupCharts();
+        });
+
+        function initializeDashboard() {
+            // Set up navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (this.getAttribute('href') !== '/') {
+                        e.preventDefault();
+                        
+                        // Update active state
+                        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // Show/hide sections (for now just overview)
+                        const section = this.getAttribute('data-section');
+                        console.log('Navigating to:', section);
+                    }
+                });
+            });
+
+            // Set up date range change
+            document.getElementById('dateRange').addEventListener('change', function() {
+                loadAnalytics(this.value);
+            });
+        }
+
+        async function loadAnalytics(period = 'month') {
+            try {
+                const response = await fetch('/api/analytics/overview');
+                const data = await response.json();
+                
+                updateStats(data);
+                updateCharts(data);
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        function updateStats(data) {
+            document.getElementById('revenue-value').textContent = `$${data.revenue_today}`;
+            document.getElementById('bookings-value').textContent = data.total_bookings_today;
+            document.getElementById('customers-value').textContent = data.repeat_customers;
+            document.getElementById('satisfaction-value').textContent = data.customer_satisfaction;
+        }
+
+        function setupCharts() {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [320, 450, 380, 520, 680, 590, 410],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Services Chart
+            const servicesCtx = document.getElementById('servicesChart').getContext('2d');
+            new Chart(servicesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Facial', 'Haircut', 'Massage', 'Nails', 'Other'],
+                    datasets: [{
+                        data: [35, 25, 20, 15, 5],
+                        backgroundColor: [
+                            '#6366f1',
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444',
+                            '#8b5cf6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(data) {
+            // Update charts with real data
+            console.log('Updating charts with:', data);
+        }
+    </script>
+</body>
+</html>
