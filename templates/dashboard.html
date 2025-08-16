@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}{{ salon_name }} - Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+    <p>Welcome to your salon management dashboard</p>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stats-number">{{ stats.total_customers }}</div>
+                    <div class="stats-label">Total Customers</div>
+                </div>
+                <i class="fas fa-users fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stats-number">{{ stats.today_appointments }}</div>
+                    <div class="stats-label">Today's Appointments</div>
+                </div>
+                <i class="fas fa-calendar-day fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stats-number">{{ stats.confirmed_appointments }}</div>
+                    <div class="stats-label">Confirmed</div>
+                </div>
+                <i class="fas fa-check-circle fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stats-number">{{ stats.completed_appointments }}</div>
+                    <div class="stats-label">Completed</div>
+                </div>
+                <i class="fas fa-star fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-primary w-100" onclick="sendReminders()">
+                            <i class="fas fa-bell"></i> Send Reminders
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-success w-100" onclick="sendSurveys()">
+                            <i class="fas fa-poll"></i> Send Surveys
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-info w-100" onclick="postSocialMedia()">
+                            <i class="fas fa-share-alt"></i> Post Availability
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="/booking" target="_blank" class="btn btn-warning w-100">
+                            <i class="fas fa-plus"></i> New Booking
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Appointments -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar-day"></i> Today's Appointments</h5>
+            </div>
+            <div class="card-body">
+                {% if today_appointments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Customer</th>
+                                <th>Service</th>
+                                <th>Contact</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in today_appointments %}
+                            <tr>
+                                <td>
+                                    <strong>{{ appointment.appointment_time.strftime('%I:%M %p') }}</strong>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>{{ appointment.customer_info.name }}</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-primary">{{ appointment.service }}</span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <small>{{ appointment.customer_info.phone }}</small><br>
+                                        <small class="text-muted">{{ appointment.customer_info.email }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if appointment.status == 'confirmed' %}
+                                        <span class="badge badge-success">Confirmed</span>
+                                    {% elif appointment.status == 'completed' %}
+                                        <span class="badge badge-info">Completed</span>
+                                    {% elif appointment.status == 'cancelled' %}
+                                        <span class="badge badge-danger">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No appointments today</h5>
+                    <p class="text-muted">All clear for today!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Upcoming Appointments -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clock"></i> Upcoming (24h)</h5>
+            </div>
+            <div class="card-body">
+                {% if upcoming_appointments %}
+                <div class="list-group list-group-flush">
+                    {% for appointment in upcoming_appointments[:5] %}
+                    <div class="list-group-item border-0 px-0">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ appointment.customer_info.name }}</h6>
+                                <small class="text-muted">{{ appointment.service }}</small>
+                            </div>
+                            <small class="text-primary">{{ appointment.appointment_time.strftime('%I:%M %p') }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="fas fa-clock fa-2x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">No upcoming appointments</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Communications -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-comments"></i> Recent Communications</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_communications %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Channel</th>
+                                <th>Type</th>
+                                <th>Customer</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for comm in recent_communications %}
+                            <tr>
+                                <td>
+                                    <small>{{ comm.timestamp.strftime('%I:%M %p') }}</small>
+                                </td>
+                                <td>
+                                    {% if comm.channel == 'sms' %}
+                                        <i class="fas fa-sms text-primary"></i> SMS
+                                    {% elif comm.channel == 'whatsapp' %}
+                                        <i class="fab fa-whatsapp text-success"></i> WhatsApp
+                                    {% elif comm.channel == 'email' %}
+                                        <i class="fas fa-envelope text-info"></i> Email
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-secondary">{{ comm.type }}</span>
+                                </td>
+                                <td>
+                                    <small>{{ comm.message[:50] }}...</small>
+                                </td>
+                                <td>
+                                    {% if comm.success %}
+                                        <span class="badge badge-success">Sent</span>
+                                    {% else %}
+                                        <span class="badge badge-danger">Failed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No recent communications</h5>
+                    <p class="text-muted">Communication logs will appear here</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Social Media Post Modal -->
+<div class="modal fade" id="socialMediaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Post Available Slots</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="socialMediaForm">
+                    <div class="mb-3">
+                        <label for="postDate" class="form-label">Select Date</label>
+                        <input type="date" class="form-control" id="postDate" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitSocialMedia()">Post</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function sendReminders() {
+    if (confirm('Send reminders to all upcoming appointments?')) {
+        fetch('/send-reminders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Reminders sent successfully!');
+                location.reload();
+            } else {
+                alert('Error sending reminders: ' + data.error);
+            }
+        });
+    }
+}
+
+function sendSurveys() {
+    if (confirm('Send satisfaction surveys to completed appointments?')) {
+        fetch('/send-satisfaction-surveys', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Surveys sent successfully!');
+                location.reload();
+            } else {
+                alert('Error sending surveys: ' + data.error);
+            }
+        });
+    }
+}
+
+function postSocialMedia() {
+    // Set default date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('postDate').value = tomorrow.toISOString().split('T')[0];
+    
+    new bootstrap.Modal(document.getElementById('socialMediaModal')).show();
+}
+
+function submitSocialMedia() {
+    const formData = new FormData();
+    formData.append('date', document.getElementById('postDate').value);
+    
+    fetch('/post-social-media', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Posted to social media successfully!');
+            bootstrap.Modal.getInstance(document.getElementById('socialMediaModal')).hide();
+        } else {
+            alert('Error posting to social media: ' + data.error);
+        }
+    });
+}
+</script>
+{% endblock %}

@@ -7,3 +7,14 @@ python-dotenv
 google-api-python-client
 google-auth
 google-auth-oauthlib
+twilio
+whatsapp-api-client-python
+facebook-sdk
+tweepy
+jinja2
+python-multipart
+aiofiles
+sqlalchemy
+pydantic
+python-jose[cryptography]
+passlib[bcrypt]
